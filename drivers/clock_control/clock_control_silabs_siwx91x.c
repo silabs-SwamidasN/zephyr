@@ -254,7 +254,9 @@ static int siwx91x_clock_init(const struct device *dev)
 					       DT_PROP(DT_PATH(cpus, cpu_0), clock_frequency));
 
 	/* Use interface PLL at configured frequency as peripheral clock */
-	sl_si91x_clock_manager_set_pll_freq(INFT_PLL, INTF_PLL_FREQUENCY, PLL_REF_CLK_VAL_XTAL);
+	sl_si91x_clock_manager_set_pll_freq(INFT_PLL,
+					    DT_PROP(DT_PATH(cpus, cpu_0), clock_frequency),
+					    PLL_REF_CLK_VAL_XTAL);
 
 	/* Change the QSPI clock source to INTF_PLL */
 	RSI_CLK_QspiClkConfig(M4CLK, QSPI_INTFPLLCLK, 0, 0, 1);
