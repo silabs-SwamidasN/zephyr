@@ -8,11 +8,32 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/sw_isr_table.h>
+#include <zephyr/linker/linker-defs.h>
+#include <zephyr/arch/common/init.h>
 
 #include "em_device.h"
 #include "sli_siwx917_soc.h"
 #include "sl_si91x_power_manager.h"
 #include "sl_si91x_hal_soc_soft_reset.h"
+
+extern char __rodata_ram_start[];
+extern char __rodata_ram_end[];
+extern char __rodata_ram_load_start[];
+
+/**
+ * @brief Copy .rodata from flash to RAM before any initialization
+ *
+ * This hook is called very early in the boot sequence, before arch_data_copy()
+ * and before soc_early_init_hook(). This ensures that .rodata is available
+ * in RAM before any SOC initialization code that might use it.
+ */
+void soc_prep_hook(void)
+{
+	size_t rodata_size = __rodata_ram_end - __rodata_ram_start;
+	if (rodata_size > 0) {
+		arch_early_memcpy(__rodata_ram_start, __rodata_ram_load_start, rodata_size);
+	}
+}
 
 void soc_early_init_hook(void)
 {
