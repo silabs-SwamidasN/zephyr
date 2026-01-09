@@ -68,7 +68,8 @@ SECTION_FUNC(TEXT, z_arm_pendsv)
 #endif /* CONFIG_INSTRUMENT_THREAD_SWITCHING */
 
     /* load _kernel into r1 and current k_thread into r2 */
-    ldr r1, =_kernel
+    movw r1, #:lower16:_kernel
+    movt r1, #:upper16:_kernel
     ldr r2, [r1, #_kernel_offset_to_current]
 
 #if defined(CONFIG_ARM_STORE_EXC_RETURN)
@@ -136,7 +137,8 @@ SECTION_FUNC(TEXT, z_arm_pendsv)
      * to pend PendSV have been taken with the current kernel
      * state and this is what we're handling currently.
      */
-    ldr r7, =_SCS_ICSR
+    movw r7, #:lower16:_SCS_ICSR
+    movt r7, #:upper16:_SCS_ICSR
     ldr r6, =_SCS_ICSR_UNPENDSV
 
     /* _kernel is still in r1 */
