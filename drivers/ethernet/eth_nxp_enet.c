@@ -62,7 +62,7 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #define ETH_NXP_ENET_UNIQUE_ID	(OCOTP->CFG1 ^ OCOTP->CFG2)
 #elif defined(CONFIG_SOC_SERIES_IMXRT11XX)
 #define ETH_NXP_ENET_UNIQUE_ID	(OCOTP->FUSEN[40].FUSE)
-#elif defined(CONFIG_SOC_SERIES_KINETIS_K6X)
+#elif defined(CONFIG_SOC_SERIES_K6X)
 #define ETH_NXP_ENET_UNIQUE_ID	(SIM->UIDH ^ SIM->UIDMH ^ SIM->UIDML ^ SIM->UIDL)
 #elif defined(CONFIG_SOC_SERIES_RW6XX)
 #define ETH_NXP_ENET_UNIQUE_ID	(OCOTP->OTP_SHADOW[46])
@@ -271,6 +271,9 @@ static enum ethernet_hw_caps eth_nxp_enet_get_capabilities(const struct device *
 		ETHERNET_HW_TX_CHKSUM_OFFLOAD |
 		ETHERNET_HW_RX_CHKSUM_OFFLOAD |
 #endif
+#if defined(CONFIG_NET_PROMISCUOUS_MODE)
+		ETHERNET_PROMISC_MODE |
+#endif
 		ETHERNET_LINK_100BASE;
 
 	if (COND_CODE_1(IS_ENABLED(CONFIG_ETH_NXP_ENET_1G),
@@ -310,6 +313,14 @@ static int eth_nxp_enet_set_config(const struct device *dev,
 		} else {
 			ENET_LeaveMulticastGroup(data->base,
 						 (uint8_t *)cfg->filter.mac_address.addr);
+		}
+		return 0;
+	case ETHERNET_CONFIG_TYPE_PROMISC_MODE:
+		/* Promiscuous mode is enabled at eth_nxp_enet_init and
+		 * cannot be disabled at runtime
+		 */
+		if (!cfg->promisc_mode) {
+			return -EINVAL;
 		}
 		return 0;
 	default:
